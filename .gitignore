@@ -106,3 +106,7 @@ venv.bak/
 
 # Ignore dataset
 input*
+
+# Ignore emacs security copies
+*~*
+*#*
