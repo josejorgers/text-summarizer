@@ -5,7 +5,7 @@ from preprocessing import text_preprocessing
 from length_verification import verify
 from sklearn.model_selection import train_test_split
 from tokenizer import tokenization
-from model import build_model
+from model import build_models, seqToText, seqToSummary, decodeSeq
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping
 
@@ -57,31 +57,26 @@ df, textLen, summaryLen = verify(data)
 X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['text']), np.array(df['summary']),
                                                     test_size=.1, random_state=0, shuffle=True)
 
-X_train, X_test, Y_train, Y_test, X_voc, Y_voc = tokenization(X_train,
+X_train, X_test, Y_train, Y_test, X_voc, Y_voc, reverseXIndexWord, reverseYIndexWord, yWordIndex = tokenization(X_train,
                                                               X_test, Y_train, Y_test, textLen, summaryLen)
 
 
-model = build_model(textLen, summaryLen, X_voc, Y_voc)
-
-model.summary()
-
-model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
-
-## Early stopping to stop the training process once the loss function starts to increment
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=2)
+model, incModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test)
 
 
-history = model.fit([X_train, Y_train[:,:-1]],
-                    Y_train.reshape(Y_train.shape[0],
-                                    Y_train.shape[1], 1)[:,:-1], epochs=20,
-                    callbacks=[es], batch_size=128,
-                    validation_data=([X_test, Y_test[:,:-1]],
-                                     Y_test.reshape(Y_test.shape[0], Y_test.shape[1],
-                                                    1)[:,:-1]))
-model.save('model-seq2seq-attn.h5')
 
+print('SOME EXAMPLES ON THE TRAINING DATA')
+for sample in range(100):
+    print('Review: ', seqToText(X_train[i], reverseXIndexWord))
+    print('Original Summary: ', seqToSummary(Y_train[i], yWordIndex, reverseYIndexWord))
+    print('Prediction: ', decodeSeq(X_train[i], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+    print('')
+    print('')
 
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='test')
-plt.legend()
-plt.show()
+print('SOME EXAMPLE ON THE TEST SET')
+for sample in range(100):
+    print('Review: ', seqToText(X_test[i], reverseXIndexWord))
+    print('Original Summary: ', seqToSummary(Y_test[i], yWordIndex, reverseYIndexWord))
+    print('Prediction: ', decodeSeq(X_test[i], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+    print('')
+    print('')

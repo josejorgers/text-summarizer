@@ -10,7 +10,7 @@ Also we define a rare word as a word which appear in the set less than a certain
 Then we analize the % of rare words in the vocabulary and the amount of times that this words appear in texts
 '''
 
-def tokenize(train, test, textLen, tresh=4): #We define a rare word as a word that appear less than 'tresh' times
+def tokenize(train, test, textLen, tresh=4, isTarget=False): #We define a rare word as a word that appear less than 'tresh' times
 
     tok = Tokenizer()
     tok.fit_on_texts(list(train))
@@ -45,12 +45,15 @@ def tokenize(train, test, textLen, tresh=4): #We define a rare word as a word th
     print('Size of vocabulary:')
     print(voc) # + 1 cause the padding token
 
-    return tr, te, voc 
+    if isTarget:
+        return tr, te, voc, tok.index_word, tok.word_index
+
+    return tr, te, voc, tok.index_word 
 
 def tokenization(X_train, X_test, Y_train, Y_test, xMaxLen, yMaxLen):
 
-    X_tr, X_te, X_voc = tokenize(X_train, X_test, xMaxLen)
-    Y_tr, Y_te, Y_voc = tokenize(Y_train, Y_test, yMaxLen, tresh=6)
+    X_tr, X_te, X_voc, reverseXIndexWord = tokenize(X_train, X_test, xMaxLen)
+    Y_tr, Y_te, Y_voc, reverseYIndexWord, yWordIndex = tokenize(Y_train, Y_test, yMaxLen, tresh=6, isTarget=True)
 
     #Erase the empty summaries entries
     idx = []
@@ -76,4 +79,4 @@ def tokenization(X_train, X_test, Y_train, Y_test, xMaxLen, yMaxLen):
     X_te = np.delete(X_te, idx, axis=0)
     
     
-    return X_tr, X_te, Y_tr, Y_te, X_voc, Y_voc
+    return X_tr, X_te, Y_tr, Y_te, X_voc, Y_voc, reverseXIndexWord, reverseYIndexWord, yWordIndex
