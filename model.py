@@ -109,7 +109,7 @@ def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_te
 
     # Attention inference
     attOutInf, attStatesInf = attLayer([decHiddenStateInput, decOut2])
-    decInfConcat = Concatenate(axis=-1, name='concat')([decOut2, attnOutInf])
+    decInfConcat = Concatenate(axis=-1, name='concat')([decOut2, attOutInf])
 
     #  A dense softmax layer to generate prob dist. over the target vocabulary
     decOut2 = decoder_dense(decoder_inf_concat) 
