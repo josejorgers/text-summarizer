@@ -110,3 +110,4 @@ input*
 # Ignore emacs security copies
 *~*
 *#*
+*.h5
