@@ -20,7 +20,7 @@ def verify(data):
 
     df = pd.DataFrame({'text':txtWordCount, 'summary': sumWordCount})
     df.hist(bins=30)
-    plt.show()
+    # plt.show()
 
     c = 0
     for s in data['summary']:
@@ -50,6 +50,6 @@ def verify(data):
 
     df = pd.DataFrame({'text': short_texts, 'summary': short_summaries})
 
-    df['summary'] = df['summary'].apply(lambda x : 'beginsum ' + x + 'endsum')
+    df['summary'] = df['summary'].apply(lambda x : 'beginsum ' + x + ' endsum')
 
     return df, max_text, max_summary

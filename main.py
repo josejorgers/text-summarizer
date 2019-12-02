@@ -11,78 +11,95 @@ from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.models import load_model
 from attention import AttentionLayer
+import sys
 
-pd.set_option("display.max_colwidth", 200)
-warnings.filterwarnings("ignore")
-
-data = pd.read_csv("./input/amazon-fine-food-reviews/Reviews.csv",nrows=100000)
-
-data.drop_duplicates(subset = 'Text', inplace=True)
-data.dropna(axis=0, inplace=True)
-
-
-preprocessedText = []
-
-for t in data['Text']:
-    preprocessedText.append(text_preprocessing(t))
-
-# print('------------------------------')
-# print('Examples of preprocessed texts')
-# print('------------------------------')
-# print(preprocessedText[:5])
-# print('')
-
-
-preprocessedSummary = []
-
-for s in data['Summary']:
-    preprocessedSummary.append(text_preprocessing(s, flag=True))
-
-
-# print('----------------------------------')
-# print('Examples of preprocessed summaries')
-# print('----------------------------------')
-# print(preprocessedSummary[:10])
-# print('')
-
-
-data['text'] = preprocessedText
-data['summary'] = preprocessedSummary
-
-data.replace('', np.nan, inplace=True)
-data.dropna(axis=0, inplace=True)
-
-#### Analisys of the distribution of lengths of texts and summaries in order to select the maximum length...
-#### for each one...
-
-df, textLen, summaryLen = verify(data)
-
-X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['text']), np.array(df['summary']),
-                                                    test_size=.1, random_state=0, shuffle=True)
-
-X_train, X_test, Y_train, Y_test, X_voc, Y_voc, reverseXIndexWord, reverseYIndexWord, yWordIndex = tokenization(X_train,
-                                                              X_test, Y_train, Y_test, textLen, summaryLen)
-
-
-model, encModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test)
-
-encModel.save_weights('encModel-seq2seq-attn')
-decModel.save_weights('decModel-seq2seq-attn')
-
-# model, encModel, decModel = load_model('model-seq2seq-attn.h5'), load_model('encModel-seq2seq-attn.h5'), load_model('decModel-seq2seq-attn.h5')
-
-print('SOME EXAMPLES ON THE TRAINING DATA')
-for sample in range(100):
-    print('Review: ', seqToText(X_train[sample], reverseXIndexWord))
-    print('Original Summary: ', seqToSummary(Y_train[sample], yWordIndex, reverseYIndexWord))
-    print('Prediction: ', decodeSeq(X_train[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
-    print('')
-    print('')
-
-print('SOME EXAMPLE ON THE TEST SET')
-for sample in range(100):
-    print('Review: ', seqToText(X_test[sample], reverseXIndexWord))
-    print('Original Summary: ', seqToSummary(Y_test[sample], yWordIndex, reverseYIndexWord))
-    print('Prediction: ', decodeSeq(X_test[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
-    print('')
-    print('')
+if __name__ == '__main__':
+	print('DEBUG: ', sys.argv)   
+	pd.set_option("display.max_colwidth", 200)
+	warnings.filterwarnings("ignore")
+	
+	data = pd.read_csv("./input/amazon-fine-food-reviews/Reviews.csv",nrows=100000)
+	
+	data.drop_duplicates(subset = 'Text', inplace=True)
+	data.dropna(axis=0, inplace=True)
+	
+	
+	preprocessedText = []
+	
+	for t in data['Text']:
+	    preprocessedText.append(text_preprocessing(t))
+	
+	# print('------------------------------')
+	# print('Examples of preprocessed texts')
+	# print('------------------------------')
+	# print(preprocessedText[:5])
+	# print('')
+	
+	
+	preprocessedSummary = []
+	
+	for s in data['Summary']:
+	    preprocessedSummary.append(text_preprocessing(s, flag=True))
+	
+	
+	# print('----------------------------------')
+	# print('Examples of preprocessed summaries')
+	# print('----------------------------------')
+	# print(preprocessedSummary[:10])
+	# print('')
+	
+	
+	data['text'] = preprocessedText
+	data['summary'] = preprocessedSummary
+	
+	data.replace('', np.nan, inplace=True)
+	data.dropna(axis=0, inplace=True)
+	
+	#### Analisys of the distribution of lengths of texts and summaries in order to select the maximum length...
+	#### for each one...
+	
+	df, textLen, summaryLen = verify(data)
+	
+	X_train, X_test, Y_train, Y_test = train_test_split(np.array(df['text']), np.array(df['summary']),
+	                                                    test_size=.1, random_state=0, shuffle=True)
+	
+	X_train, X_test, Y_train, Y_test, X_voc, Y_voc, reverseXIndexWord, reverseYIndexWord, yWordIndex = tokenization(X_train,
+	                                                              X_test, Y_train, Y_test, textLen, summaryLen)
+	model, encModel, decModel = None, None, None
+	
+	
+	if len(sys.argv) == 1:
+	    model, encModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test, firstTime=True)
+	else:
+	    model, encModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test)
+	    model.load_weights('weights/model-seq2seq-attn')
+	    encModel.load_weights('weights/encModel-seq2seq-attn')
+	    decModel.load_weights('weights/decModel-seq2seq-attn')
+	    
+	model.save_weights('weights/model-seq2seq-attn')
+	encModel.save_weights('weights/encModel-seq2seq-attn')
+	decModel.save_weights('weights/decModel-seq2seq-attn')
+	
+	# model, encModel, decModel =
+	# load_model('model-seq2seq-attn.h5'),
+	# load_model('encModel-seq2seq-attn.h5'),
+	# load_model('decModel-seq2seq-attn.h5')
+	
+	print('SOME EXAMPLES ON THE TRAINING DATA')
+	for sample in range(100):
+	    print('DEBUG: ', np.shape(X_train[sample]))
+	    print('Review: ', seqToText(X_train[sample], reverseXIndexWord))
+	    print('Original Summary: ', seqToSummary(Y_train[sample], yWordIndex, reverseYIndexWord))
+	    print('Prediction: ', decodeSeq(X_train[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+	    print('')
+	    print('')
+	
+	print('SOME EXAMPLE ON THE TEST SET')
+	for sample in range(100):
+	    print('Review: ', seqToText(X_test[sample], reverseXIndexWord))
+	    print('Original Summary: ', seqToSummary(Y_test[sample], yWordIndex, reverseYIndexWord))
+	    print('Prediction: ', decodeSeq(X_test[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+	    print('')
+	    print('')
+	
+	

@@ -10,7 +10,7 @@ K.clear_session()
 latent_dim = 300
 embedding_dim = 100
 
-def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_test):
+def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_test, firstTime = False):
 
     ##### ENCODER #####
 
@@ -60,28 +60,29 @@ def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_te
 
     model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy')
 
-    ## Early stopping to stop the training process once the loss function starts to increment
-    # es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=2)
+    if firstTime:
+    	## Early stopping to stop the training process once the loss function starts to increment
+    	# es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=2)
+    	
+    	
+    	history = model.fit([X_train, Y_train[:,:-1]],
+    	               Y_train.reshape(Y_train.shape[0],
+    	                               Y_train.shape[1], 1)[:,:-1], epochs=20,
+    	               batch_size=128,
+    	               validation_data=([X_test, Y_test[:,:-1]],
+    	                                Y_test.reshape(Y_test.shape[0], Y_test.shape[1],
+    	                                               1)[:,:-1]))
+    	model.save_weights('weights/model-seq2seq-attn')
 
-
-    history = model.fit([X_train, Y_train[:,:-1]],
-                    Y_train.reshape(Y_train.shape[0],
-                                    Y_train.shape[1], 1)[:,:-1], epochs=20,
-                    batch_size=128,
-                    validation_data=([X_test, Y_test[:,:-1]],
-                                     Y_test.reshape(Y_test.shape[0], Y_test.shape[1],
-                                                    1)[:,:-1]))
-    model.save_weights('model-seq2seq-attn')
-
-    print('HISTORY OF THE MODEL')
-    print(history)
-    print('')
-    print('')
-
-    plt.plot(history.history['loss'], label='train')
-    plt.plot(history.history['val_loss'], label='test')
-    plt.legend()
-    plt.show()
+    	print('HISTORY OF THE MODEL')
+    	print(history)
+    	print('')
+    	print('')
+    	
+    	# plt.plot(history.history['loss'], label='train')
+    	# plt.plot(history.history['val_loss'], label='test')
+    	# plt.legend()
+    	# plt.show()
 
     
     ###################
@@ -119,13 +120,15 @@ def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_te
                            [decHiddenStateInput,decStateInputH,
                             decStateInputC], [decOut2] + [stateH2, stateC2])
 
-    encModel.save('encModel-seq2seq-attn.h5')
-    decModel.save('decModel-seq2seq-attn.h5')
+    encModel.save('weights/encModel-seq2seq-attn.h5')
+    decModel.save('weights/decModel-seq2seq-attn.h5')
     
     return model, encModel, decModel
 
 
 def decodeSeq(inputSeq, model, encModel, decModel, reverseYIndexWord, yWordIndex, sumLen):
+
+    inputSeq = inputSeq[None,:]
 
     # Seq encoding
     eOut, eH, eC = encModel.predict(inputSeq)
@@ -161,7 +164,7 @@ def seqToSummary(inputSeq, yWordIndex, reverseYIndexWord):
     newStr = ''
     for i in inputSeq:
         if i != 0 and i != yWordIndex['beginsum'] and i != yWordIndex['endsum']:
-            newString += reverseYIndexWord[i] + ' '
+            newStr += reverseYIndexWord[i] + ' '
     return newStr
 
 def seqToText(inputSeq, reverseXIndexWord):
