@@ -7,7 +7,10 @@ from sklearn.model_selection import train_test_split
 from tokenizer import tokenization
 from model import build_models, seqToText, seqToSummary, decodeSeq
 import matplotlib.pyplot as plt
+from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.models import load_model
+from attention import AttentionLayer
 
 pd.set_option("display.max_colwidth", 200)
 warnings.filterwarnings("ignore")
@@ -23,11 +26,11 @@ preprocessedText = []
 for t in data['Text']:
     preprocessedText.append(text_preprocessing(t))
 
-print('------------------------------')
-print('Examples of preprocessed texts')
-print('------------------------------')
-print(preprocessedText[:5])
-print('')
+# print('------------------------------')
+# print('Examples of preprocessed texts')
+# print('------------------------------')
+# print(preprocessedText[:5])
+# print('')
 
 
 preprocessedSummary = []
@@ -36,11 +39,11 @@ for s in data['Summary']:
     preprocessedSummary.append(text_preprocessing(s, flag=True))
 
 
-print('----------------------------------')
-print('Examples of preprocessed summaries')
-print('----------------------------------')
-print(preprocessedSummary[:10])
-print('')
+# print('----------------------------------')
+# print('Examples of preprocessed summaries')
+# print('----------------------------------')
+# print(preprocessedSummary[:10])
+# print('')
 
 
 data['text'] = preprocessedText
@@ -61,22 +64,25 @@ X_train, X_test, Y_train, Y_test, X_voc, Y_voc, reverseXIndexWord, reverseYIndex
                                                               X_test, Y_train, Y_test, textLen, summaryLen)
 
 
-model, incModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test)
+model, encModel, decModel = build_models(textLen, summaryLen, X_voc, Y_voc, X_train, Y_train, X_test, Y_test)
 
+encModel.save_weights('encModel-seq2seq-attn')
+decModel.save_weights('decModel-seq2seq-attn')
 
+# model, encModel, decModel = load_model('model-seq2seq-attn.h5'), load_model('encModel-seq2seq-attn.h5'), load_model('decModel-seq2seq-attn.h5')
 
 print('SOME EXAMPLES ON THE TRAINING DATA')
 for sample in range(100):
-    print('Review: ', seqToText(X_train[i], reverseXIndexWord))
-    print('Original Summary: ', seqToSummary(Y_train[i], yWordIndex, reverseYIndexWord))
-    print('Prediction: ', decodeSeq(X_train[i], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+    print('Review: ', seqToText(X_train[sample], reverseXIndexWord))
+    print('Original Summary: ', seqToSummary(Y_train[sample], yWordIndex, reverseYIndexWord))
+    print('Prediction: ', decodeSeq(X_train[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
     print('')
     print('')
 
 print('SOME EXAMPLE ON THE TEST SET')
 for sample in range(100):
-    print('Review: ', seqToText(X_test[i], reverseXIndexWord))
-    print('Original Summary: ', seqToSummary(Y_test[i], yWordIndex, reverseYIndexWord))
-    print('Prediction: ', decodeSeq(X_test[i], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
+    print('Review: ', seqToText(X_test[sample], reverseXIndexWord))
+    print('Original Summary: ', seqToSummary(Y_test[sample], yWordIndex, reverseYIndexWord))
+    print('Prediction: ', decodeSeq(X_test[sample], model, encModel, decModel, reverseYIndexWord, yWordIndex, summaryLen))
     print('')
     print('')

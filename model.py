@@ -71,7 +71,7 @@ def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_te
                     validation_data=([X_test, Y_test[:,:-1]],
                                      Y_test.reshape(Y_test.shape[0], Y_test.shape[1],
                                                     1)[:,:-1]))
-    model.save('model-seq2seq-attn.h5')
+    model.save_weights('model-seq2seq-attn')
 
     print('HISTORY OF THE MODEL')
     print(history)
@@ -112,12 +112,12 @@ def build_models(textLen, summaryLen, xVoc, yVoc, X_train, Y_train, X_test, Y_te
     decInfConcat = Concatenate(axis=-1, name='concat')([decOut2, attOutInf])
 
     #  A dense softmax layer to generate prob dist. over the target vocabulary
-    decOut2 = decoder_dense(decoder_inf_concat) 
+    decOut2 = decDense(decInfConcat) 
 
     # Final decoder model
-    decModel = Model( [decoder_inputs] +
-                           [decoder_hidden_state_input,decoder_state_input_h,
-                            decoder_state_input_c], [decoder_outputs2] + [state_h2, state_c2])
+    decModel = Model( [decInput] +
+                           [decHiddenStateInput,decStateInputH,
+                            decStateInputC], [decOut2] + [stateH2, stateC2])
 
     encModel.save('encModel-seq2seq-attn.h5')
     decModel.save('decModel-seq2seq-attn.h5')
