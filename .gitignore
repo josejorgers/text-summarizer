@@ -111,4 +111,5 @@ input*
 *~*
 *#*
 *.h5
-weights*
+model*
+checkpoint
