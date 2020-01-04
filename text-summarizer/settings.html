@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings</title>
+</head>
+<body>
+    <h1>Settings</h1>
+    <form id="settingsForm">
+        <label for="dataPath">Path to input text</label>
+        <input type="text" id="dataPath">
+        <label for="scriptPath">Path to python scritpts</label>
+        <input type="text" id="scriptPath">
+        <button id="saveChanges">Save changes</button>
+        <button id="cancel">Cancel</button>
+    </form>
+
+    <script>
+        const electron = require('electron');
+        const {ipcRenderer} = electron;
+
+        const submit = document.querySelector('#saveChanges');
+        submit.addEventListener('click', function(){
+            const settings = {
+                dataPath: document.querySelector('#dataPath').value,
+                scriptPath: document.querySelector('#scriptPath').value
+            };
+            ipcRenderer.send('settings:change', settings);
+        });
+
+        const cancel = document.querySelector("#cancel");
+        cancel.addEventListener('click', function(){
+            ipcRenderer.send('settings:cancel', {});
+        });
+    </script>
+</body>
+</html>

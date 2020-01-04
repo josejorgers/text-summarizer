@@ -1,0 +1,16 @@
+{
+  "name": "text-summarizer",
+  "version": "1.0.0",
+  "description": "A simple UI to test several text summarizer models coded in keras",
+  "main": "main.js",
+  "author": "Jose Jorge Rodriguez",
+  "license": "MIT",
+  "private": true,
+  "scripts":{
+    "start" : "electron --disable-gpu ." 
+  },
+  "dependencies": {
+    "electron": "^7.1.7",
+    "python-shell": "^1.0.8"
+  }
+}
