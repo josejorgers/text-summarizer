@@ -19,6 +19,15 @@
         const electron = require('electron');
         const {ipcRenderer} = electron;
 
+        // document.addEventListener(, function(){
+        //     console.log('SENDING LOAD EVENT');
+        //     ipcRenderer.send('settings:load', {});
+        // });
+        ipcRenderer.on('settings:load', function(e, data){
+            console.log('RECEIVING LOAD EVENT');
+            document.getElementById('dataPath').value = data.dataPath;
+            document.getElementById('scriptPath').value = data.scriptPath;
+        });
         const submit = document.querySelector('#saveChanges');
         submit.addEventListener('click', function(){
             const settings = {

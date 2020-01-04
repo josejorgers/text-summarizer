@@ -6,11 +6,12 @@ const path = require('path')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+const {settings} = require('./config');
+
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
     webPreferences: {
         nodeIntegration: true
     }
@@ -75,6 +76,10 @@ function createSettingsWindow(){
 
   settingsWindow.loadFile('settings.html');
 
+  settingsWindow.webContents.on('dom-ready', () => {
+    console.log('SENDING EVENT');
+    settingsWindow.webContents.send('settings:load', settings);
+  });
   settingsWindow.on('closed', function () {
     settingsWindow = null;
   })
@@ -110,5 +115,12 @@ ipcMain.on('settings:cancel', function(e, data){
 });
 
 ipcMain.on('settings:change', function(e, data){
+  settings.changeDataPath(data.dataPath);
+  settings.changeScriptPath(data.scriptPath);
   settingsWindow.close();
 });
+
+// ipcMain.on('settings:load', function(e){
+//   console.log('RECEIVING LOAD AND SENDING REPLY');
+//   e.reply('settings:load-reply', settings);
+// });
