@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Settings</title>
+    <link rel="stylesheet" href='./assets/css/materialize.min.css'>
 </head>
-<body>
+<body class="container">
     <h1>Settings</h1>
     <form id="settingsForm">
-        <label for="dataPath">Path to input text</label>
+        <label class="active" for="dataPath">Path to input text</label>
         <input type="text" id="dataPath">
-        <label for="scriptPath">Path to python scritpts</label>
+        <label class="active" for="scriptPath">Path to python scritpts</label>
         <input type="text" id="scriptPath">
-        <button id="saveChanges">Save changes</button>
-        <button id="cancel">Cancel</button>
+        <button id="saveChanges" class="btn waves-effect">Save changes</button>
+        <button id="cancel" class="btn waves-effect red">Cancel</button>
     </form>
 
     <script>

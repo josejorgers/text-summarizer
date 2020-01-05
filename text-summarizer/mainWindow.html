@@ -3,8 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <title>TextSummarizer</title>
+    <link rel="stylesheet" href='./assets/css/materialize.min.css'>
 </head>
 <body>
-    <h1>Welcome to TextSummarizer</h1>
+    <section id="mainContent" class="container">
+        <h3 class="light-green lighten-2 white-text center-align">Welcome to TextSummarizer</h3>
+        <p class="flow-text">A Desktop App to try our nueral network models for automatic text summarization</p>
+        
+        <div id="clearContainer">
+            <button id="clearSession" onclick="clearSession()" class="btn red waves-effect large-btn">Clear Session</button>
+        </div>
+
+        <form>
+            <div id="modelForm">
+                <div class="input-field">
+                    <label id='convLbl' class="active" for='convResult'>Convolutional Model Output</label>
+                    <textarea type='text' id="convResult" class='materialize-textarea'></textarea>
+                    <button id="convTrigger" class="btn waves-effect">Run Conv Model</button>
+                    <!-- <button id="clearConv" class="btn red waves-effect">Clear Output</button> -->
+                </div>
+                <div class="input-field">
+                    <label id='recLbl' class="active" for='recResult'>Recurrent Model Output</label>
+                    <textarea id="recResult" class="materialize-textarea"></textarea>
+                    <button id="recTrigger" class="btn waves-effect">Run Recurrent Model</button>
+                    <!-- <button id="clearRec" class="btn red waves-effect">Clear Output</button> -->
+                </div>
+            </div>
+            
+            <div class="input-field">
+                <label id='lsaLbl' class="active" for='lsaResult'>LSA Model Output</label>
+                <textarea id="lsaResult" class="materialize-textarea"></textarea>
+                <button id="lsaTrigger" class="btn waves-effect">Run LSA Model</button>
+                <!-- <button id="clearLsa" class="btn red waves-effect">Clear Output</button> -->
+            </div> 
+        </form>
+    </section>
+
+    <script>
+        const {ipcRenderer} = require('electron');
+
+        const convTrigger = document.getElementById('convTrigger');
+        const convResult = document.getElementById('convResult');
+
+        convTrigger.addEventListener('click', function(e, data){
+            e.preventDefault();
+            ipcRenderer.send('trigger:conv');
+        });
+        
+        ipcRenderer.on('conv:results', function(e, msg){
+            convResult.value = convResult.value + msg;
+        });
+        
+        const recTrigger = document.getElementById('recTrigger');
+        const recResult = document.getElementById('recResult');
+
+        recTrigger.addEventListener('click', function(e, data){
+            e.preventDefault();
+            ipcRenderer.send('trigger:rec');
+        });
+        
+        ipcRenderer.on('rec:results', function(e, msg){
+            recResult.value = recResult.value + msg;
+        });
+
+        const lsaTrigger = document.getElementById('lsaTrigger');
+        const lsaResult = document.getElementById('lsaResult');
+
+        lsaTrigger.addEventListener('click', function(e, data){
+            e.preventDefault();
+            ipcRenderer.send('trigger:lsa');
+        });
+        
+        ipcRenderer.on('lsa:results', function(e, msg){
+            lsaResult.value = lsaResult.value + msg;
+        });
+
+        function clearSession(){
+            convResult.value = '';
+            recResult.value = '';
+            lsaResult.value = ''
+        };
+        
+    </script>
+    <style>
+        textarea{
+            min-height: 300px !important;
+            max-height: 400px !important;
+        }
+        #modelForm{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        #clearContainer{
+            padding-top: 20px;
+            padding-bottom: 30px;
+        }
+    </style>
 </body>
 </html>

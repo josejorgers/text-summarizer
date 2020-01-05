@@ -1,14 +1,16 @@
 import json
 import numpy as np
 import warnings
+import sys, os
 
-targetWI = open('summary_word_index.json')
+
+targetWI = open(os.path.join(sys.argv[2], 'summary_word_index.json'))
 target_word_index = json.load(targetWI)
 
-reverseSourceWI = open('reverse_text_word_index.json')
+reverseSourceWI = open(os.path.join(sys.argv[2], 'reverse_text_word_index.json'))
 reverse_source_word_index = json.load(reverseSourceWI)
 
-reverseTargetWI = open('reverse_summary_word_index.json')
+reverseTargetWI = open(os.path.join(sys.argv[2],'reverse_summary_word_index.json'))
 reverse_target_word_index = json.load(reverseTargetWI)
 
 max_text_len = 30
@@ -61,25 +63,51 @@ def decode_sequence(input_seq, encoder_model, decoder_model):
 
 
 if __name__ == '__main__':
+    
     warnings.filterwarnings('ignore')
-    texts = np.loadtxt('textTest.csv')
-    summaries = np.loadtxt('summaryTest.csv')
+    texts = np.loadtxt(os.path.join(sys.argv[2], 'textTest.csv'))
+    summaries = np.loadtxt(os.path.join(sys.argv[2], 'summaryTest.csv'))
 
-    from recurrent_model import getModel
+    import recurrent_model, convolutional_model
     import keras.backend as K
     K.clear_session()
 
-    enc, dec = getModel()
+    model = sys.argv[1]
 
-    enc.summary()
-    dec.summary()
+    if model == 'conv':
+        enc, dec = convolutional_model.getModel()
+    elif model == 'rec':
+        enc, dec = recurrent_model.getModel()
+    elif model == 'lsa':
+        import latent_semantic as lsa
+        import pandas as pd
 
-    print('GOT ENCODER AND DECODER')
-    print(len(target_word_index.keys()))
-    print(len(reverse_source_word_index.keys()))
+        predict = lsa.run()
+        PATH = os.path.join(sys.argv[2], 'testDataset.csv')
+        data = pd.read_csv(PATH)
+        texts = data['text']
+        sums = data['summary']
+        
+        for i in range(10):
+            print("TEXT: " + str(i+1) + "\r\n")
+            print("Review: " + texts[i] + "\r\n")
+            print("Original summary: " + sums[i][7:-7] + "\r\n")
+            print("Calculated words: \r\n")
+            print(predict[2*i])
+            print(predict[2*i + 1])
+            print("\r\n")
+
+        sys.exit(0)
+    else:
+        print('USAGE: python3 inference.py <model> <dataPath>')
+        print('<model>: One of three options ("lsa", "conv" or "rec")')
+        print('<dataPath>: Path to the test data')
+        sys.exit(1)
+
     for i in range(0,500):
-        print("Review:",seq2text(texts[i]))
-        print("Original summary:",seq2summary(summaries[i]))
-        print("Predicted summary:",decode_sequence(texts[i].reshape(1,max_text_len), enc, dec))
-        print("\n")
-    print('END')
+        print("TEXT: " + str(i+1) + "\r\n")
+        print("Review: " + seq2text(texts[i]) + "\r\n")
+        print("Original summary: " + seq2summary(summaries[i]) + "\r\n")
+        print("Predicted summary: " + decode_sequence(texts[i].reshape(1,max_text_len), enc, dec) + "\r\n")
+        print("\r\n")
+    sys.stdout.flush()

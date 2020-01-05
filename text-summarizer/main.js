@@ -1,17 +1,15 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, Menu, ipcMain} = require('electron')
-const path = require('path')
+const {createSettingsWindow, listenForSettingsCancel, listenForSettingsChange} = require('./settings');
+const {listenForConvTrigger, listenForRecurrentTrigger, listenForLSATrigger} = require('./linkers/modelListeners');
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-
-const {settings} = require('./config');
-
 
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
+    height: 800,
+    width: 1200,
     webPreferences: {
         nodeIntegration: true
     }
@@ -28,6 +26,17 @@ function createWindow () {
   //Setting the menu
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
+  
+  // Model triggers and responses
+  ipcMain.on('trigger:conv', function (){
+    listenForConvTrigger(mainWindow)
+  });
+  ipcMain.on('trigger:rec', function (){
+    listenForRecurrentTrigger(mainWindow)
+  });
+  ipcMain.on('trigger:lsa', function (){
+    listenForLSATrigger(mainWindow)
+  });
 }
 
 
@@ -61,32 +70,6 @@ const menuTemplate = [
   }
 ]
 
-let settingsWindow;
-
-function createSettingsWindow(){
-
-  settingsWindow = new BrowserWindow({
-    width: 400,
-    height: 300,
-    title: 'Settings',
-    webPreferences:{
-        nodeIntegration: true
-    }
-  });
-
-  settingsWindow.loadFile('settings.html');
-
-  settingsWindow.webContents.on('dom-ready', () => {
-    console.log('SENDING EVENT');
-    settingsWindow.webContents.send('settings:load', settings);
-  });
-  settingsWindow.on('closed', function () {
-    settingsWindow = null;
-  })
-}
-
-
-
 // if mac then add an empty item to the menu
 if(process.platform == 'darwin'){
   menuTemplate.unshift({
@@ -110,17 +93,5 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 // Settings window events
-ipcMain.on('settings:cancel', function(e, data){
-  settingsWindow.close();
-});
-
-ipcMain.on('settings:change', function(e, data){
-  settings.changeDataPath(data.dataPath);
-  settings.changeScriptPath(data.scriptPath);
-  settingsWindow.close();
-});
-
-// ipcMain.on('settings:load', function(e){
-//   console.log('RECEIVING LOAD AND SENDING REPLY');
-//   e.reply('settings:load-reply', settings);
-// });
+listenForSettingsCancel();
+listenForSettingsChange();

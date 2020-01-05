@@ -1,7 +1,7 @@
 
 let settings = {
-    scriptPath : '../scripts',
-    dataPath : '.',
+    scriptPath : '../../scripts',
+    dataPath : './../scripts',
     changeScriptPath : function(newPath){
         this.scriptPath = newPath;
     },
