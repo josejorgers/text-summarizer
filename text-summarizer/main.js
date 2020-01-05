@@ -3,6 +3,10 @@ const {app, BrowserWindow, Menu, ipcMain} = require('electron')
 const {createSettingsWindow, listenForSettingsCancel, listenForSettingsChange} = require('./settings');
 const {listenForConvTrigger, listenForRecurrentTrigger, listenForLSATrigger} = require('./linkers/modelListeners');
 
+// Production mode
+process.env.NODE_ENV = 'production'
+
+
 let mainWindow
 
 function createWindow () {
@@ -51,9 +55,6 @@ const menuTemplate = [
   {
     label: 'Files',
     submenu: [
-      {
-        label: 'Clear session'
-      },
       {
         label: 'Settings',
         click(){

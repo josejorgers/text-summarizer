@@ -12,8 +12,8 @@ function listenForSettingsCancel(){
   
 function listenForSettingsChange(){
     ipcMain.on('settings:change', function(e, data){
-      settings.changeDataPath(path.join(__dirname, data.dataPath));
-      settings.changeScriptPath(path.join(__dirname, data.scriptPath));
+      settings.changeDataPath(path.join('', data.dataPath));
+      settings.changeScriptPath(path.join('', data.scriptPath));
       settingsWindow.close();
     });
 }
@@ -27,7 +27,8 @@ function createSettingsWindow(){
       title: 'Settings',
       webPreferences:{
           nodeIntegration: true
-      }
+      },
+      autoHideMenuBar: true
     });
   
     settingsWindow.loadFile('settings.html');
