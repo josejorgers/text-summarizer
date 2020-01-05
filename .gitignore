@@ -113,5 +113,6 @@ input*
 *.h5
 *model*
 checkpoint
-doc*
+*template*
 *node_modules*
+*release-builds*
