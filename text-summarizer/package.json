@@ -13,7 +13,7 @@
     "package-linux": "electron-packager . text-summarizer --overwrite --asar=true --platform=linux --arch=x64 --icon=assets/icons/png/icon.png --prune=true --out=release-builds"
   },
   "dependencies": {
-    "electron": "^7.2.4",
+    "electron": "^9.4.0",
     "electron-packager": "^14.1.1",
     "python-shell": "^1.0.8"
   }
